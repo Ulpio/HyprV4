@@ -106,70 +106,75 @@ show_progress() {
 install_software() {
     # First lets see if the package is there
     if yay -Q $1 &>> /dev/null ; then
-        echo -e "$COK - $1 is already installed."
+        echo -e "$COK - $1 Já está Instalado."
     else
-        # no package found so installing
-        echo -en "$CNT - Now installing $1 ."
+        # no package found so Instalando
+        echo -en "$CNT - Instalando $1 ."
         yay -S --noconfirm $1 &>> $INSTLOG &
         show_progress $!
         # test to make sure package installed
         if yay -Q $1 &>> /dev/null ; then
-            echo -e "\e[1A\e[K$COK - $1 was installed."
+            echo -e "\e[1A\e[K$COK - $1 Foi instalado."
         else
             # if this is hit then a package is missing, exit to review log
-            echo -e "\e[1A\e[K$CER - $1 install had failed, please check the install.log"
+            echo -e "\e[1A\e[K$CER - $1 Falhou a instalação, verifique install.log"
             exit
         fi
     fi
 }
 
-# clear the screen
+# Limpar tela
 clear
 
-# set some expectations for the user
-echo -e "$CNT - You are about to execute a script that would attempt to setup Hyprland.
-Please note that Hyprland is still in Beta."
+# Deixando o usuário ciente de que o script está prestes a ser executado
+echo -e "$CNT - Este script tentará instalar o Hyprland em seu sistema."
+sleep 1
+echo -e "$CNT - Este script foi projetado para ser executado em uma instalação limpa do Arch Linux."
+sleep 1
+echo -e "$CNT - Esse script foi criado por SolDoesTech e traduzido por Ulpio."
+sleep 1
+echo -e "$CNT - você está prestes a executar um script que tentaria configurar o Hyprland.
+Observe que o Hyprland ainda está em Beta."
 sleep 1
 
-# attempt to discover if this is a VM or not
-echo -e "$CNT - Checking for Physical or VM..."
+# Tentando descobrir se o usuário está executando o script como root
+echo -e "$CNT - Verificando se é um computador físico ou VM..."
 ISVM=$(hostnamectl | grep Chassis)
-echo -e "Using $ISVM"
+echo -e "Usando $ISVM"
 if [[ $ISVM == *"vm"* ]]; then
-    echo -e "$CWR - Please note that VMs are not fully supported and if you try to run this on
-    a Virtual Machine there is a high chance this will fail."
+    echo -e "$CWR - Por favor note que as VMs não são totalmente suportadas e se você tentar executar isso em
+    uma máquina virtual há uma grande chance de que isso falhe."
     sleep 1
 fi
 
-# let the user know that we will use sudo
+# Deixar o usuario ciente que o script usará o sudo
 echo -e "$CNT - This script will run some commands that require sudo. You will be prompted to enter your password.
 If you are worried about entering your password then you may want to review the content of the script."
 sleep 1
 
-# give the user an option to exit out
-read -rep $'[\e[1;33mACTION\e[0m] - Would you like to continue with the install (y,n) ' CONTINST
+# Dando a opção de sair do script
+read -rep $'[\e[1;33mACTION\e[0m] - Gosta de continuar? (y,n) ' CONTINST
 if [[ $CONTINST == "Y" || $CONTINST == "y" ]]; then
-    echo -e "$CNT - Setup starting..."
+    echo -e "$CNT - Iniciando o script..."
     sudo touch /tmp/hyprv.tmp
 else
-    echo -e "$CNT - This script will now exit, no changes were made to your system."
-    exit
+    echo -e "$CNT - Script será encerrado, nenhuma alteração foi feita no seu sistema."
 fi
 
-# find the Nvidia GPU
+# Procurando GPU Nvidia
 if lspci -k | grep -A 2 -E "(VGA|3D)" | grep -iq nvidia; then
     ISNVIDIA=true
 else
     ISNVIDIA=false
 fi
 
-### Disable wifi powersave mode ###
-read -rep $'[\e[1;33mACTION\e[0m] - Would you like to disable WiFi powersave? (y,n) ' WIFI
+### Desativa a economia de energia para WIFI ###
+read -rep $'[\e[1;33mACTION\e[0m] - Gostaria de desativar a economia de energia para wi-fi? (y,n) ' WIFI
 if [[ $WIFI == "Y" || $WIFI == "y" ]]; then
     LOC="/etc/NetworkManager/conf.d/wifi-powersave.conf"
-    echo -e "$CNT - The following file has been created $LOC.\n"
+    echo -e "$CNT - O seguinte arquivo foi criado $LOC.\n"
     echo -e "[connection]\nwifi.powersave = 2" | sudo tee -a $LOC &>> $INSTLOG
-    echo -en "$CNT - Restarting NetworkManager service, Please wait."
+    echo -en "$CNT - Reiniciando o servico NetworkManager, Por favor aguarde."
     sleep 2
     sudo systemctl restart NetworkManager &>> $INSTLOG
     
@@ -179,49 +184,49 @@ if [[ $WIFI == "Y" || $WIFI == "y" ]]; then
         echo -n "."
         sleep 1
     done
-    echo -en "Done!\n"
+    echo -en "Feito!\n"
     sleep 2
-    echo -e "\e[1A\e[K$COK - NetworkManager restart completed."
+    echo -e "\e[1A\e[K$COK - Reinicialização do NetworkManager completa ."
 fi
 
 #### Check for package manager ####
 if [ ! -f /sbin/yay ]; then  
-    echo -en "$CNT - Configuering yay."
+    echo -en "$CNT - Configurando yay."
     git clone https://aur.archlinux.org/yay.git &>> $INSTLOG
     cd yay
     makepkg -si --noconfirm &>> ../$INSTLOG &
     show_progress $!
     if [ -f /sbin/yay ]; then
-        echo -e "\e[1A\e[K$COK - yay configured"
+        echo -e "\e[1A\e[K$COK - yay Configurado"
         cd ..
         
         # update the yay database
-        echo -en "$CNT - Updating yay."
+        echo -en "$CNT - Atualizando yay."
         yay -Suy --noconfirm &>> $INSTLOG &
         show_progress $!
-        echo -e "\e[1A\e[K$COK - yay updated."
+        echo -e "\e[1A\e[K$COK - yay Atualizado."
     else
         # if this is hit then a package is missing, exit to review log
-        echo -e "\e[1A\e[K$CER - yay install failed, please check the install.log"
+        echo -e "\e[1A\e[K$CER - Intalação do yay falhou, verifique install.log"
         exit
     fi
 fi
 
 
 
-### Install all of the above pacakges ####
-read -rep $'[\e[1;33mACTION\e[0m] - Would you like to install the packages? (y,n) ' INST
+### Baixar todos os pacores ####
+read -rep $'[\e[1;33mACTION\e[0m] - Gostaria de instalar os pacotes? (y,n) ' INST
 if [[ $INST == "Y" || $INST == "y" ]]; then
 
     # Prep Stage - Bunch of needed items
-    echo -e "$CNT - Prep Stage - Installing needed components, this may take a while..."
+    echo -e "$CNT - Estágio de preparação - Instalando componentes necessários, isso pode demorar um pouco..."
     for SOFTWR in ${prep_stage[@]}; do
         install_software $SOFTWR 
     done
 
-    # Setup Nvidia if it was found
+    # Instalando placa Nvidia
     if [[ "$ISNVIDIA" == true ]]; then
-        echo -e "$CNT - Nvidia GPU support setup stage, this may take a while..."
+        echo -e "$CNT - Estagio de suporte a GPU Nvidia - Instalando componentes necessários, isso pode demorar um pouco..."
         for SOFTWR in ${nvidia_stage[@]}; do
             install_software $SOFTWR
         done
@@ -232,8 +237,8 @@ if [[ $INST == "Y" || $INST == "y" ]]; then
         echo -e "options nvidia-drm modeset=1" | sudo tee -a /etc/modprobe.d/nvidia.conf &>> $INSTLOG
     fi
 
-    # Install the correct hyprland version
-    echo -e "$CNT - Installing Hyprland, this may take a while..."
+    # Instalando a versão correta do Hyprland
+    echo -e "$CNT - Instalando Hyprland, Isso pode demorar um pouco..."
     if [[ "$ISNVIDIA" == true ]]; then
         #check for hyprland and remove it so the -nvidia package can be installed
         if yay -Q hyprland &>> /dev/null ; then
@@ -245,42 +250,42 @@ if [[ $INST == "Y" || $INST == "y" ]]; then
     fi
 
     # Stage 1 - main components
-    echo -e "$CNT - Installing main components, this may take a while..."
+    echo -e "$CNT - Instalando main components, Isso pode demorar um pouco..."
     for SOFTWR in ${install_stage[@]}; do
         install_software $SOFTWR 
     done
 
     # Start the bluetooth service
-    echo -e "$CNT - Starting the Bluetooth Service..."
+    echo -e "$CNT - Iniciando o Serviço de Bluetooth..."
     sudo systemctl enable --now bluetooth.service &>> $INSTLOG
     sleep 2
 
     # Enable the sddm login manager service
-    echo -e "$CNT - Enabling the SDDM Service..."
+    echo -e "$CNT - Ativando o serviço do SDDM ..."
     sudo systemctl enable sddm &>> $INSTLOG
     sleep 2
     
     # Clean out other portals
-    echo -e "$CNT - Cleaning out conflicting xdg portals..."
+    echo -e "$CNT - Limpando portais xdg conflitantes..." 
     yay -R --noconfirm xdg-desktop-portal-gnome xdg-desktop-portal-gtk &>> $INSTLOG
 fi
 
 ### Copy Config Files ###
-read -rep $'[\e[1;33mACTION\e[0m] - Would you like to copy config files? (y,n) ' CFG
+read -rep $'[\e[1;33mACTION\e[0m] - gostaria de copiar os arqvuios de configuração? (y,n) ' CFG
 if [[ $CFG == "Y" || $CFG == "y" ]]; then
-    echo -e "$CNT - Copying config files..."
+    echo -e "$CNT - Copiando arquivos..."
 
     # copy the HyprV directory
     cp -R HyprV ~/.config/
 
     #set the measuring unit
-    echo -e "$CNT - Attempring to set mesuring unit..."
+    echo -e "$CNT - Tentando encontrar o sistema de medidas..."
     if locale -a | grep -q ^en_US; then
-        echo -e "$COK - Setting mesuring system to imperial..."
+        echo -e "$COK - usando o sistema imperial..."
         ln -sf ~/.config/HyprV/waybar/conf/mesu-imp.jsonc ~/.config/HyprV/waybar/conf/mesu.jsonc
         sed -i 's/SET_MESU=""/SET_MESU="I"/' ~/.config/HyprV/hyprv.conf
     else
-        echo -e "$COK - Setting mesuring system to metric..."
+        echo -e "$COK - Usando o sistema métrico metric..."
         sed -i 's/SET_MESU=""/SET_MESU="M"/' ~/.config/HyprV/hyprv.conf
         ln -sf ~/.config/HyprV/waybar/conf/mesu-met.jsonc ~/.config/HyprV/waybar/conf/mesu.jsonc
     fi
@@ -301,7 +306,7 @@ if [[ $CFG == "Y" || $CFG == "y" ]]; then
     done
 
     # link up the config files
-    echo -e "$CNT - Setting up the new config..." 
+    echo -e "$CNT - Instalando a nova configuração..." 
     cp ~/.config/HyprV/hypr/* ~/.config/hypr/
     ln -sf ~/.config/HyprV/kitty/kitty.conf ~/.config/kitty/kitty.conf
     ln -sf ~/.config/HyprV/mako/conf/config-dark ~/.config/mako/config
@@ -314,12 +319,12 @@ if [[ $CFG == "Y" || $CFG == "y" ]]; then
 
 
     # add the Nvidia env file to the config (if needed)
-    if [[ "$ISNVIDIA" == true ]]; then
+    if [[ "$ISNVIDIA" == true ]] then
         echo -e "\nsource = ~/.config/hypr/env_var_nvidia.conf" >> ~/.config/hypr/hyprland.conf
     fi
 
     # Copy the SDDM theme
-    echo -e "$CNT - Setting up the login screen."
+    echo -e "$CNT - Instalando a tela de login."
     sudo cp -R Extras/sdt /usr/share/sddm/themes/
     sudo chown -R $USER:$USER /usr/share/sddm/themes/sdt
     sudo mkdir /etc/sddm.conf.d
@@ -348,33 +353,33 @@ read -rep $'[\e[1;33mACTION\e[0m] - Would you like to activate the starship shel
 if [[ $STAR == "Y" || $STAR == "y" ]]; then
     # install the starship shell
     echo -e "$CNT - Hansen Crusher, Engage!"
-    echo -e "$CNT - Updating .bashrc..."
+    echo -e "$CNT - Atualizando .bashrc..."
     echo -e '\neval "$(starship init bash)"' >> ~/.bashrc
     echo -e "$CNT - copying starship config file to ~/.config ..."
     cp Extras/starship.toml ~/.config/
 fi
 
 ### Install software for Asus ROG laptops ###
-read -rep $'[\e[1;33mACTION\e[0m] - For ASUS ROG Laptops - Would you like to install Asus ROG software support? (y,n) ' ROG
+read -rep $'[\e[1;33mACTION\e[0m] - Para notebooks ASUS ROG - Gostaria de instalar Asus ROG software support? (y,n) ' ROG
 if [[ $ROG == "Y" || $ROG == "y" ]]; then
-    echo -e "$CNT - Adding Keys..."
+    echo -e "$CNT - Adicionando Keys..."
     sudo pacman-key --recv-keys 8F654886F17D497FEFE3DB448B15A6B0E9A3FA35 &>> $INSTLOG
     sudo pacman-key --finger 8F654886F17D497FEFE3DB448B15A6B0E9A3FA35 &>> $INSTLOG
     sudo pacman-key --lsign-key 8F654886F17D497FEFE3DB448B15A6B0E9A3FA35 &>> $INSTLOG
     sudo pacman-key --finger 8F654886F17D497FEFE3DB448B15A6B0E9A3FA35 &>> $INSTLOG
 
     LOC="/etc/pacman.conf"
-    echo -e "$CNT - Updating $LOC with g14 repo."
+    echo -e "$CNT - Atualizando $LOC com o repo g14."
     echo -e "\n[g14]\nServer = https://arch.asus-linux.org" | sudo tee -a $LOC &>> $INSTLOG
-    echo -e "$CNT - Update the system..."
+    echo -e "$CNT - atualize o sistema..."
     sudo pacman -Suy --noconfirm &>> $INSTLOG
 
-    echo -e "$CNT - Installing ROG pacakges..."
+    echo -e "$CNT - Instalando pacotes ROG ..."
     install_software asusctl
     install_software supergfxctl
     install_software rog-control-center
 
-    echo -e "$CNT - Activating ROG services..."
+    echo -e "$CNT - Ativando servicos ROG..."
     sudo systemctl enable --now power-profiles-daemon.service &>> $INSTLOG
     sleep 2
     sudo systemctl enable --now supergfxd &>> $INSTLOG
@@ -385,14 +390,14 @@ if [[ $ROG == "Y" || $ROG == "y" ]]; then
 fi
 
 ### Script is done ###
-echo -e "$CNT - Script had completed!"
+echo -e "$CNT - Script completo!"
 if [[ "$ISNVIDIA" == true ]]; then 
-    echo -e "$CAT - Since we attempted to setup an Nvidia GPU the script will now end and you should reboot.
-    Please type 'reboot' at the prompt and hit Enter when ready."
+    echo -e "$CAT - Desde que tentamos configurar uma GPU Nvidia, o script agora será encerrado e você deverá reiniciar.
+    Digite 'reboot' no prompt e pressione Enter quando estiver pronto."
     exit
 fi
 
-read -rep $'[\e[1;33mACTION\e[0m] - Would you like to start Hyprland now? (y,n) ' HYP
+read -rep $'[\e[1;33mACTION\e[0m] - Gostaria de iniciar o Hyprland agora? (y,n) ' HYP
 if [[ $HYP == "Y" || $HYP == "y" ]]; then
     exec sudo systemctl start sddm &>> $INSTLOG
 else
