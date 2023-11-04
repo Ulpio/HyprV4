@@ -148,8 +148,9 @@ if [[ $ISVM == *"vm"* ]]; then
 fi
 
 # Deixar o usuario ciente que o script usará o sudo
-echo -e "$CNT - This script will run some commands that require sudo. You will be prompted to enter your password.
-If you are worried about entering your password then you may want to review the content of the script."
+echo -e "$CNT - Esse script usará o sudo para executar alguns comandos.
+Você será solicitado a inserir sua senha.
+Se você estiver preocupado em inserir sua senha, poderá revisar o conteúdo do script."
 sleep 1
 
 # Dando a opção de sair do script
@@ -271,7 +272,7 @@ if [[ $INST == "Y" || $INST == "y" ]]; then
 fi
 
 ### Copy Config Files ###
-read -rep $'[\e[1;33mACTION\e[0m] - gostaria de copiar os arqvuios de configuração? (y,n) ' CFG
+read -rep $'[\e[1;33mACTION\e[0m] - gostaria de copiar os arquivos de configuração? (y,n) ' CFG
 if [[ $CFG == "Y" || $CFG == "y" ]]; then
     echo -e "$CNT - Copiando arquivos..."
 
@@ -349,7 +350,7 @@ if [[ $CFG == "Y" || $CFG == "y" ]]; then
 fi
 
 ### Install the starship shell ###
-read -rep $'[\e[1;33mACTION\e[0m] - Would you like to activate the starship shell? (y,n) ' STAR
+read -rep $'[\e[1;33mACTION\e[0m] - gostaria de ativar o shell StarShip ? (y,n) ' STAR
 if [[ $STAR == "Y" || $STAR == "y" ]]; then
     # install the starship shell
     echo -e "$CNT - Hansen Crusher, Engage!"
